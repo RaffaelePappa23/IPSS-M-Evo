@@ -3,7 +3,7 @@
 # global.R
 # ─────────────────────────────────────────────────────────────────────────────
 
-# ─── 1. LIBRARIE (package) ───────────────────────────────────────────────────
+# ─── 1. LIBRERIE (package) ───────────────────────────────────────────────────
 
 # >>> Librerie necessarie per l'interfaccia Shiny e analisi dati
 library(shiny)            # Framework per applicazioni web interattive
