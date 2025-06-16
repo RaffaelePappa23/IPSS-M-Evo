@@ -1,0 +1,249 @@
+
+/* ─────────────────────────────────────────────────────────────────────────────
+  style.css
+  ─────────────────────────────────────────────────────────────────────────────*/
+
+/* Stile generale del body: sfondo sfumato e altezza minima */
+body {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); /* sfondo sfumato chiaro */
+  min-height: 100vh; /* assicura copertura di tutta la finestra */
+}
+
+/* Wrapper principale: limita larghezza e centra il contenuto */
+.content-wrapper {
+  max-width: 95%;       /* massimo 95% della larghezza viewport */
+  margin: 0 auto;       /* centro orizzontale */
+  padding: 0 10px;      /* padding laterale */
+}
+
+/* Header principale: sfondo, colori, padding e ombra */
+.main-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); /* viola/blu sfumato */
+  color: white;        /* testo bianco */
+  padding: 20px;
+  margin-bottom: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* lieve ombra */
+}
+
+/* Titolo principale: dimensione e peso */
+.main-header h1 {
+  margin: 0;
+  font-size: 2.2em;
+  font-weight: 300;    /* testo sottile */
+}
+
+/* Sottotitolo: dimensione ridotta e opacità */
+.main-header .subtitle {
+  font-size: 1.1em;
+  opacity: 0.9;
+  margin-top: 5px;
+}
+
+/* ====================
+   Tabs personalizzati
+   ==================== */
+
+/* Bordo inferiore e spaziatura delle nav-tabs */
+.nav-tabs {
+  border-bottom: 2px solid #e9ecef;
+  margin-bottom: -20px !important; /* sovrappone leggermente il contenuto */
+}
+
+/* Stile dei singoli tab */
+.nav-tabs > li > a {
+  color: #495057;
+  font-weight: 500;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px 8px 0 0; /* arrotonda angoli superiori */
+  margin-right: 5px;
+}
+
+/* Tab attivo: sfondo sfumato e testo bianco */
+.nav-tabs > li.active > a {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+}
+
+/* =====================
+   Cards per contenuti
+   ===================== */
+.content-card {
+  background: #e9ecef;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  padding: 20px;
+  margin-bottom: 20px;
+  backdrop-filter: blur(10px); /* effetto vetro */
+}
+
+/* =========
+   Sidebar 
+   ========= */
+.sidebar-card {
+  background: #dee2e0;
+  border: 1px solid #dee2e6;
+  border-radius: 10px;
+  padding: 20px;
+  backdrop-filter: blur(10px);
+  min-height: 80vh; /* altezza minima */
+}
+
+/* Titolo della sidebar: stile e icona */
+.sidebar-title {
+  color: #495057;
+  font-size: 1.3em;
+  font-weight: 600;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+}
+
+.sidebar-title i {
+  margin-right: 8px;
+  color: #667eea; /* icona colorata */
+}
+
+/* =========
+   Bottoni
+   ========= */
+.btn-custom {
+  border-radius: 25px;
+  padding: 10px 25px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  border: 1px solid #adb5bd;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Effetto hover sui bottoni */
+.btn-custom:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+/* Bottoni primari: sfondo sfumato e testo bianco */
+.btn-primary-custom {
+  background: linear-gradient(45deg, #667eea, #764ba2);
+  color: white;
+}
+
+/* Bottoni di pericolo: sfondo rosso sfumato */
+.btn-danger-custom {
+  background: linear-gradient(45deg, #ff6b6b, #ffa8a8);
+  color: white;
+  font-weight: 600;
+}
+
+/* =================
+   Checkbox groups 
+   ================= */
+.checkbox-group {
+  max-height: 55vh;        /* altezza massima scrollabile */
+  overflow-y: auto;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 20px 20px 20px 30px;
+  background: #f1f3f5;
+  backdrop-filter: blur(5px); /* filtro vetro leggero */
+}
+
+/* Spazio tra le checkbox */
+.checkbox-group .checkbox {
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+}
+
+/* Ingrandisco il checkbox */
+.checkbox-group .checkbox input[type='checkbox'] {
+  margin-right: 12px;
+  transform: scale(1.2);
+  flex-shrink: 0;
+}
+
+/* Stile etichette delle checkbox */
+.checkbox-group label {
+  font-weight: 400;
+  color: #495057;
+  cursor: pointer;
+  padding: 8px 0;
+  transition: color 0.2s ease;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+/* Hover sulle etichette */
+.checkbox-group label:hover {
+  color: #667eea;
+}
+
+/* ====================
+   Sezione risultati
+   ==================== */
+.results-section {
+  border-left: 4px solid #5e69d1; /* linea verticale colorata */
+  padding-left: 20px;
+  margin-top: 20px;
+  background: #f8f9fa; /* sfondo chiaro */
+}
+
+/* Card dei risultati individuali */
+.result-card {
+  background: linear-gradient(135deg, rgba(248, 249, 250, 0.9) 0%, rgba(233, 236, 239, 0.9) 100%);
+  border-radius: 10px;
+  padding: 15px;
+  margin-bottom: 15px;
+  border-left: 4px solid #28a745; /* bordo sinistro verde */
+  backdrop-filter: blur(5px);
+}
+
+/* =========================
+   Loading animation overlay
+   ========================= */
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255,255,255,0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000; /* sopra gli altri elementi */
+}
+
+/* =================
+   Info boxes
+   ================= */
+.info-box {
+  background: #dfe7f2;
+  border: 1px solid #b3d9ff;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 15px;
+  backdrop-filter: blur(5px);
+}
+
+.info-box-icon {
+  color: #0066cc;
+  margin-right: 8px;
+}
+
+/* ======================
+   Empty state styling
+   ====================== */
+.empty-state {
+  background: #ced4da;
+  border: 2px dashed #dee2e6;
+  border-radius: 10px;
+  padding: 40px;
+  text-align: center;
+  color: #6c757d;
+  backdrop-filter: blur(5px);
+}
