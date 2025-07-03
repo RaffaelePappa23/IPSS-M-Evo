@@ -55,15 +55,15 @@ gene_map <- data.frame(
            "NRAS", "PHF6", "PPM1D", "PRPF40B", "PTPN11", "RAD21", "RUNX1", "SETBP1", 
            "SF3B1", "SMC1A", "SMC3", "SRSF2", "STAG2", "TET2", "TP53", "U2AF1", 
            "WT1", "ZRSR2"),
-  ensembl = c("ENSG00000085224", "ENSG00000167671", "ENSG00000167674", "ENSG00000110395", 
+  ensembl = c("ENSG00000085224", "ENSG00000183337", "ENSG00000085185", "ENSG00000110395", 
               "ENSG00000245848", "ENSG00000005339", "ENSG00000119535", "ENSG00000106278", 
-              "ENSG00000119772", "ENSG00000100393", "ENSG00000127329", "ENSG00000139083", 
+              "ENSG00000119772", "ENSG00000100393", "ENSG00000139163", "ENSG00000139083", 
               "ENSG00000106462", "ENSG00000122025", "ENSG00000179348", "ENSG00000078369", 
-              "ENSG00000187498", "ENSG00000138413", "ENSG00000182054", "ENSG00000096968", 
+              "ENSG00000087460", "ENSG00000138413", "ENSG00000182054", "ENSG00000096968", 
               "ENSG00000157404", "ENSG00000167548", "ENSG00000133703", "ENSG00000117400", 
               "ENSG00000196712", "ENSG00000148400", "ENSG00000181163", "ENSG00000213281", 
-              "ENSG00000122180", "ENSG00000173960", "ENSG00000166922", "ENSG00000179295", 
-              "ENSG00000164754", "ENSG00000159216", "ENSG00000152284", "ENSG00000115461", 
+              "ENSG00000156531", "ENSG00000170836", "ENSG00000110844", "ENSG00000179295", 
+              "ENSG00000164754", "ENSG00000159216", "ENSG00000152217", "ENSG00000115524", 
               "ENSG00000072501", "ENSG00000108055", "ENSG00000161547", "ENSG00000101972", 
               "ENSG00000168769", "ENSG00000141510", "ENSG00000160201", "ENSG00000184937", 
               "ENSG00000169249"),
@@ -73,29 +73,6 @@ gene_map <- data.frame(
 # 2.2. Elenco alfabetico dei 47 geni
 # >>> Vettore dei geni ordinati
 genes <- sort(gene_map$gene)
-
-
-# 2.2. Elenco completo di 47 geni (ordinato alfabeticamente)
-#genes <- c(
-#  "ATRX","BCOR","BCORL1","CBL","CEBPA","CREBBP","CSF3R","CUX1","DNMT3A",
-#  "EP300","ETNK1","ETV6","EZH2","FLT3","GATA2","GNB1","GNAS","IDH1",
-#  "IDH2","JAK2","KIT","KMT2D","KRAS","MPL","NF1","NOTCH1","NPM1",
-#  "NRAS","PHF6","PPM1D","PRPF40B","PTPN11","RAD21","RUNX1","SETBP1",
-#  "SF3B1","SMC1A","SMC3","SRSF2","STAG2","TET2","TP53","U2AF1",
-#  "WT1","ZRSR2"
-#) %>% sort()
-
-# ─── 2. MAPPING Gene → Ensembl ID ────────────────────────────────────────────
-# Usa biomaRt per scaricare gli ENS IDs dei 47 geni
-# mart <- useMart("ensembl", dataset = "hsapiens_gene_ensembl")
-# gene_map <- getBM(
-#  attributes = c("hgnc_symbol", "ensembl_gene_id"),
-#  filters    = "hgnc_symbol",
-#  values     = genes,
-#  mart       = mart
-#) %>%
-#  rename(gene = hgnc_symbol, ensembl = ensembl_gene_id)
-
 
 # ─── 2.3. Probabilità evolutive (parent → child) ─────────────────────────────
 
@@ -155,7 +132,7 @@ weights <- list(
   JAK2       = 0.46186776075953
 )
 
-# ─── 4. FUNZIONI DI UTILITÀ (Utilities) ───────────────────────────────────────
+# ─── 4. FUNZIONI DI UTILITÀ  ───────────────────────────────────────
 
 # 4.1. Assegnazione della classe di rischio in base allo score
 # >>> Funzione che ritorna la classe in base al valore dello score numerico

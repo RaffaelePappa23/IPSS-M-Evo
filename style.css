@@ -1,4 +1,3 @@
-
 /* ─────────────────────────────────────────────────────────────────────────────
   style.css
   ─────────────────────────────────────────────────────────────────────────────*/
@@ -11,13 +10,14 @@ body {
 
 /* Wrapper principale: limita larghezza e centra il contenuto */
 .content-wrapper {
-  max-width: 95%;       /* massimo 95% della larghezza viewport */
+  max-width: 100%;       /* massimo 100% della larghezza viewport */
   margin: 0 auto;       /* centro orizzontale */
-  padding: 0 10px;      /* padding laterale */
 }
 
 /* Header principale: sfondo, colori, padding e ombra */
 .main-header {
+  position: relative; 
+  text-align: center;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); /* viola/blu sfumato */
   color: white;        /* testo bianco */
   padding: 20px;
@@ -30,7 +30,7 @@ body {
 .main-header h1 {
   margin: 0;
   font-size: 2.2em;
-  font-weight: 300;    /* testo sottile */
+  font-weight: 600;    /* testo sottile */
 }
 
 /* Sottotitolo: dimensione ridotta e opacità */
@@ -38,33 +38,6 @@ body {
   font-size: 1.1em;
   opacity: 0.9;
   margin-top: 5px;
-}
-
-/* ====================
-   Tabs personalizzati
-   ==================== */
-
-/* Bordo inferiore e spaziatura delle nav-tabs */
-.nav-tabs {
-  border-bottom: 2px solid #e9ecef;
-  margin-bottom: -20px !important; /* sovrappone leggermente il contenuto */
-}
-
-/* Stile dei singoli tab */
-.nav-tabs > li > a {
-  color: #495057;
-  font-weight: 500;
-  padding: 12px 20px;
-  border: none;
-  border-radius: 8px 8px 0 0; /* arrotonda angoli superiori */
-  margin-right: 5px;
-}
-
-/* Tab attivo: sfondo sfumato e testo bianco */
-.nav-tabs > li.active > a {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border: none;
 }
 
 /* =====================
@@ -80,7 +53,7 @@ body {
 }
 
 /* =========
-   Sidebar 
+   Sidebar interno
    ========= */
 .sidebar-card {
   background: #dee2e0;
@@ -246,4 +219,77 @@ body {
   text-align: center;
   color: #6c757d;
   backdrop-filter: blur(5px);
+}
+
+/* ── Hamburger centrato verticalmente dentro l’header ─────────────────────── */
+#menu-toggle {
+  display: inline-flex;
+  align-items: center;
+  position: absolute;
+  top: 50%;                   /* punto medio dell’header */
+  left: 20px;                 /* distanza da sinistra */
+  transform: translateY(-50%);/* riallinea esattamente al centro */
+  cursor: pointer;
+  z-index: 1100;
+  color: white;
+  transition: transform 0.3s ease;
+}
+
+#menu-toggle .menu-label {
+  color: white;
+  margin-left: 10px;
+  font-size: 2rem;      
+  user-select: none;
+  line-height: 1;
+}
+
+#menu-toggle i {
+  transition: transform 0.3s ease;
+  display: inline-block; /* necessario per la trasformazione */
+}
+
+#menu-toggle.active i {
+  transform: rotate(90deg);
+}
+
+
+/* ── Offcanvas sidebar ─────────────── */
+#sidebar {
+  position: fixed;
+  top: 0;
+  left: -250px;  
+  width: 250px;
+  height: 100%;
+  background: #354471;         
+  color: #f1f3f5;              
+  padding: 60px 20px;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.3);
+  transition: left 0.3s ease;
+  z-index: 1050;
+  backdrop-filter: blur(6px); 
+}
+
+#sidebar.active {
+  left: 0;
+}
+
+#sidebar ul {
+  list-style: none;
+  padding: 20px 0 0 0;  
+  margin: 0;
+}
+
+#sidebar ul li {
+  margin: 18px 0;
+}
+
+#sidebar ul li a {
+  color: #a8c1ff;             
+  text-decoration: none;
+  font-size: 1.1em;
+  transition: color 0.2s ease;
+}
+
+#sidebar ul li a:hover {
+  color: #ffffff;
 }

@@ -5,106 +5,184 @@
 
 server <- function(input, output, session) {
   
-  # ─── 3.1. REACTIVE per “Evolutionary Routes”: dati di rete (force + sankey)
+  # tutti i geni che appaiono come parent in routes
+  parent_genes <- unique(routes$parent)
+  
+  # ─── 1. FILTRO PER LA BARRA DI RICERCA ────────────────────────────────────
+  
+  # 1.1 reactive che filtra i geni in base al testo digitato
+  filtered_genes <- reactive({
+    # se non ha ancora digitato nulla, ritorna tutti i geni
+    txt <- str_trim(input$gene_search %||% "")
+    if (txt == "") {
+      genes
+    } else {
+      # ricerca case-insensitive
+      genes[str_detect(genes, regex(txt, ignore_case = TRUE))]
+    }
+  })
+  
+  # 1.2 renderUI per creare dinamicamente il checkboxGroupInput
+  output$genes_checkboxes <- renderUI({
+    # geni filtrati dal testo di ricerca
+    matches   <- filtered_genes()
+    # geni già selezionati
+    already   <- input$mutations %||% character(0)
+    # unisco in modo che i selected non spariscano
+    all_choices <- sort(unique(c(already, matches)))
+    
+    if (length(all_choices) == 0) {
+      tags$em("No genes available")
+    } else {
+      # preparo choiceNames/choiceValues
+      choice_values <- all_choices
+      choice_names  <- lapply(all_choices, function(g) {
+        if (g %in% parent_genes) {
+          tags$span(style = "font-weight:bold; color:#3182bd;",
+                    g,
+                    tags$span(style = "font-size:80%; color:#666;", " (parent)"))
+        } else {
+          g
+        }
+      })
+      
+      checkboxGroupInput(
+        inputId    = "mutations",
+        label      = NULL,
+        choiceNames  = choice_names,
+        choiceValues = choice_values,
+        selected     = already,
+        width        = "100%"
+      )
+    }
+  })
+  
+  # ─── REACTIVE per “Evolutionary Routes”: dati di rete (force + sankey)
   # >>> net_data() si ricalcola solo quando l'utente preme il pulsante "draw"
   net_data <- eventReactive(input$draw, {
     
-    # --- 1) Leggo le mutazioni selezionate dall'utente
+    # 1) Input selezionati
     selected <- if (is.null(input$mutations)) character(0) else input$mutations
     
-    # --- 2) Trovo quali dei geni selezionati sono effettivamente parent in 'routes'
+    # 2) Identifico i veri parent tra i selezionati
     selected_parents <- routes %>%
       filter(parent %in% selected) %>%
       pull(parent) %>% unique()
     
-    # --- 3) Seleziono le coppie parent→child relative a quei parent
+    # 3) Filtri solo le coppie parent→child attive
     active_links <- routes %>%
       filter(parent %in% selected_parents)
     
-    # --- 4) Individuo tutti i figli potenziali unici
-    potential_children <- unique(active_links$child)
+    # 4) Preparo tibble vuoti per nodi e link
+    nodes <- tibble(name = character(), group = character(), ensembl = character())
+    links <- tibble(source = integer(), target = integer(), value = numeric())
     
-    # --- 5) I nodi da mostrare in grafo: i parent scelti + i loro figli
-    display_genes <- union(selected_parents, potential_children)
-    
-    # --- 6) Costruisco tibble dei nodi, con nome, gruppo e Ensembl ID
-    nodes <- tibble(
-      name    = display_genes,
-      group   = case_when(
-        name %in% selected_parents ~ "present",   # geni già mutati
-        TRUE                       ~ "potential"  # possibili step evolutivi
-      ),
-      ensembl = gene_map$ensembl[match(display_genes, gene_map$gene)]
-    ) %>%
-      mutate(
-        # > Se manca Ensembl ID, lo sostituisco con il simbolo del gene
-        ensembl = if_else(is.na(ensembl), name, ensembl)
-      )
-    
-    # ─── 2) Aggiungo nodi “gruppo figli” e “gruppo orfani” per ciascun parent
-    parents_with_child <- unique(active_links$parent)
-    grp_nodes <- tibble(name=character(), group=character(), ensembl=character())
-    for(p in parents_with_child) {
-      # 2a) Nodo contenitore per tutti i figli di p
-      grp_nodes <- add_row(grp_nodes,
-                           name    = paste0(p, "_childrens"),
-                           group   = "group",
-                           ensembl = NA_character_
-      )
-      # 2b) Nodo per gli orfani (mutazioni scelte ma non figlie di p)
-      orph <- setdiff(selected, c(p, active_links$child[active_links$parent == p]))
-      if(length(orph)) {
-        grp_nodes <- add_row(grp_nodes,
-                             name    = paste(orph, collapse = ", "),
-                             group   = "group",
-                             ensembl = NA_character_
-        )
+    # 5) Ciclo su ciascun parent per costruire la gerarchia
+    for (p in selected_parents) {
+      # 5.1) Nodo radice del parent
+      nodes <- add_row(nodes,
+                       name    = p,
+                       group   = "present",
+                       ensembl = gene_map$ensembl[gene_map$gene == p])
+      
+      # 5.2) Individuo figli e orfani
+      kids  <- active_links %>% filter(parent == p) %>% pull(child)
+      orphs <- setdiff(selected, union(selected_parents, kids))
+      
+      # 5.3) Nodo gruppo “childrens” + link p → p_childrens
+      child_grp <- paste0(p, "_childrens")
+      nodes <- add_row(nodes,
+                       name    = child_grp,
+                       group   = "group",
+                       ensembl = NA_character_)
+      links <- add_row(links,
+                       source = NA,
+                       target = NA,
+                       value  = length(kids))  # 0 se nessun figlio
+      
+      # 5.4) Sotto‐link p_childrens → ciascun figlio
+      for (k in kids) {
+        nodes <- add_row(nodes,
+                         name    = k,
+                         group   = "potential",
+                         ensembl = gene_map$ensembl[gene_map$gene == k])
+        links <- add_row(links,
+                         source = NA,
+                         target = NA,
+                         value  = 1)
+      }
+      
+      # 5.5) Nodo gruppo “orphans” (sempre) + link p → p_orphans
+      orphan_grp <- paste0(p, "_orphans")
+      nodes <- add_row(nodes,
+                       name    = orphan_grp,
+                       group   = "group",
+                       ensembl = NA_character_)
+      # assicuro valore minore uguale a 1 per far comparire il ramo
+      links <- add_row(links,
+                       source = NA,
+                       target = NA,
+                       value  = ifelse(length(orphs) > 0, length(orphs), 1))
+      
+      # 5.6) Sotto‐link p_orphans → ciascun orphan (se presenti)
+      for (o in orphs) {
+        nodes <- add_row(nodes,
+                         name    = o,
+                         group   = "potential",
+                         ensembl = gene_map$ensembl[gene_map$gene == o])
+        links <- add_row(links,
+                         source = NA,
+                         target = NA,
+                         value  = 1)
       }
     }
-    # Unisco nodi base + group‑nodes, evitando duplicati sul nome
-    nodes <- bind_rows(nodes, grp_nodes) %>% distinct(name, .keep_all = TRUE)
     
-    # ─── 3) Creo mappa name → id (0‑based) per D3.js/Sankey
+    # 6) Rimuovo duplicati e forzo l’ordine dei livelli per i colori
+    nodes <- distinct(nodes, name, .keep_all = TRUE) %>%
+      mutate(group = factor(group, levels = c("present", "potential", "group")))
+    
+    # 7) Creo la mappa name → id (0‐based)
     id_map <- set_names(seq_len(nrow(nodes)) - 1L, nodes$name)
     
-    # ─── 4) Costruisco df links (source, target, value)
-    links <- tibble(source = integer(), target = integer(), value = numeric())
-    for(p in parents_with_child) {
-      # 4a) COLLEGAMENTI parent → gruppo figli → ogni figlio
-      kids <- active_links$child[active_links$parent == p]
-      if(length(kids)) {
-        grp_c <- paste0(p, "_childrens")
-        # parent ➔ gruppo bambini
-        links <- add_row(links,
-                         source = id_map[p],
-                         target = id_map[grp_c],
-                         value  = length(kids))
-        # gruppo bambini ➔ ciascun figlio
-        for(k in kids) {
-          links <- add_row(links,
-                           source = id_map[grp_c],
-                           target = id_map[k],
-                           value  = 1)
-        }
+    # 8) Compilo source/target nei link nell’ordine in cui sono stati aggiunti
+    li <- 1L
+    for (p in selected_parents) {
+      kids  <- active_links %>% filter(parent == p) %>% pull(child)
+      orphs <- setdiff(selected, union(selected_parents, kids))
+      
+      # p → p_childrens
+      links$source[li] <- id_map[p]
+      links$target[li] <- id_map[paste0(p, "_childrens")]
+      li <- li + 1L
+      
+      # p_childrens → kids
+      for (k in kids) {
+        links$source[li] <- id_map[paste0(p, "_childrens")]
+        links$target[li] <- id_map[k]
+        li <- li + 1L
       }
-      # 4b) COLLEGAMENTO parent → gruppo orfani (se esistono)
-      orph <- setdiff(selected, c(p, kids))
-      if(length(orph)) {
-        grp_o_name <- paste(orph, collapse = ", ")
-        links <- add_row(links,
-                         source = id_map[p],
-                         target = id_map[grp_o_name],
-                         value  = length(orph))
+      
+      # p → p_orphans
+      links$source[li] <- id_map[p]
+      links$target[li] <- id_map[paste0(p, "_orphans")]
+      li <- li + 1L
+      
+      # p_orphans → orphs (nessuno se orphs è vuoto)
+      for (o in orphs) {
+        links$source[li] <- id_map[paste0(p, "_orphans")]
+        links$target[li] <- id_map[o]
+        li <- li + 1L
       }
     }
     
-    # ─── 5) Restituisco la lista con nodi, link e parent attivi
+    # 9) Restituisco la lista a renderForce/Sankey
     list(
-      nodes = nodes,
-      links = links,
+      nodes            = nodes,
+      links            = links,
       selected_parents = selected_parents
     )
   })
+  
   
   # ─── Costruzione di jsMap per collegare gene → Ensembl URL in JS
   jsMap <- toJSON(
@@ -135,7 +213,12 @@ server <- function(input, output, session) {
       opacity  = 1.0,        
       opacityNoHover = 1.0,
       zoom     = TRUE,
-      legend   = TRUE
+      legend   = TRUE,
+      colourScale = JS("
+      d3.scaleOrdinal()
+        .domain(['present','potential','group'])
+        .range(['#3182bd','#9ecae1','#d08000'])
+    ")
     ) %>% onRender(
       sprintf(
         'function(el, x) {
@@ -160,7 +243,9 @@ server <- function(input, output, session) {
       shiny::need(length(net_data()$selected_parents) > 0,
                   "⚠️ Select at least one Parent mutation valid for drawing the Sankey Diagram")
     )
+    
     data <- net_data()
+    
     # >>> Disegno il Sankey e aggiungo onRender JS per click su barre/rect
     sankeyNetwork(
       Links      = data$links,
@@ -173,7 +258,12 @@ server <- function(input, output, session) {
       sinksRight = FALSE,
       fontSize   = 14,
       nodeWidth  = 20,
-      nodePadding= 15
+      nodePadding= 15,
+      colourScale = JS("
+      d3.scaleOrdinal()
+        .domain(['present','potential','group'])
+        .range(['#3182bd','#9ecae1','#d08000'])
+    ")
     ) %>% onRender(
       sprintf(
         'function(el, x) {
@@ -239,6 +329,10 @@ server <- function(input, output, session) {
   
   # 3.6 Reset selezione mutazioni (pulsante “clear_all”)
   observeEvent(input$clear_all, {
+    # 1) Svuota la search bar
+    updateTextInput(session, "gene_search", value = "")
+    
+    # 2) Deseleziona tutte le checkbox
     updateCheckboxGroupInput(session, "mutations", selected = character(0))
   })
   
@@ -257,8 +351,9 @@ server <- function(input, output, session) {
     session$sendInputMessage("go", list(value = 0))
   })
   
-  # 3.7.2 Calcolo dello score quando si clicca “go”
+  # 3.7.2 Calcolo dello score quando si clicca “calculate risk”
   observeEvent(input$go, {
+    
     # --- Validazione input
     if (is.na(input$ipssm) || input$ipssm < 0 || input$ipssm > 5) {
       showNotification("Insert an IPSS-M score valid between 0 and 5", type="error")
