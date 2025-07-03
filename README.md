@@ -1,2 +1,2 @@
 # IPSS-M-Evo
-Evolutionary Routes & Calculator
+Evolutionary Routes Analysis & Calculator
